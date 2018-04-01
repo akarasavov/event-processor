@@ -1,21 +1,28 @@
 package soundcloud.entity;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * @author akt.
  */
 public class Action {
 
 	private final String message;
-	private final String sequence;
 	private final ActionType actionType;
-	private final String fromUser;
-	private final String toUser;
+	private String fromUser;
+	private String toUser;
 
-	public Action(String message, String sequence, ActionType actionType, String fromUser, String toUser) {
+	public Action(String message, ActionType actionType) {
 		this.message = message;
-		this.sequence = sequence;
 		this.actionType = actionType;
+	}
+
+	public void setFromUser(String fromUser) {
 		this.fromUser = fromUser;
+	}
+
+	public void setToUser(String toUser) {
 		this.toUser = toUser;
 	}
 
@@ -23,18 +30,18 @@ public class Action {
 		return message;
 	}
 
-	public String getSequence() {
-		return sequence;
-	}
 
+	@NotNull
 	public ActionType getActionType() {
 		return actionType;
 	}
 
+	@Nullable
 	public String getFromUser() {
 		return fromUser;
 	}
 
+	@NotNull
 	public String getToUser() {
 		return toUser;
 	}

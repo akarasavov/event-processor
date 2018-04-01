@@ -25,7 +25,7 @@ public class ServerSocketImplTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.server = new ServerSocketImpl();
+		this.server = new ServerSocketImpl("serverSocket");
 		this.client = new ClientSocketImpl();
 		this.hostName = InetAddress.getLocalHost().getHostName();
 

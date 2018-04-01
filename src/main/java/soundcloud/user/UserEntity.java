@@ -3,7 +3,6 @@ package soundcloud.user;
 import java.nio.channels.SocketChannel;
 import java.util.HashSet;
 import java.util.Set;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author akt.
@@ -13,10 +12,6 @@ public class UserEntity {
 	private final SocketChannel socketChannel;
 	private final String userCode;
 	private final Set<String> followers = new HashSet<>();
-
-	public UserEntity(String userCode) {
-		this(userCode, null);
-	}
 
 	public UserEntity(String userCode, SocketChannel socketChannel) {
 		this.userCode = userCode;
@@ -35,7 +30,6 @@ public class UserEntity {
 		return followers;
 	}
 
-	@Nullable
 	public SocketChannel getSocketChannel() {
 		return socketChannel;
 	}

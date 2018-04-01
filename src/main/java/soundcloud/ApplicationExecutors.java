@@ -15,6 +15,7 @@ public class ApplicationExecutors {
 	public final static ExecutorService EVENT_SOURCE_NIO = createExecutorService();
 	public final static ExecutorService CLIENT_NIO = createExecutorService();
 
+	public final static ExecutorService CLIENT_WORKER = createExecutorService();
 
 	private static ExecutorService createExecutorService() {
 		return Executors.newSingleThreadExecutor();

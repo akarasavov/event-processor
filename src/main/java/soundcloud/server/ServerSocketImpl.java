@@ -30,7 +30,7 @@ import soundcloud.util.SocketChannelUtil;
  */
 public class ServerSocketImpl implements ServerSocket {
 
-	private final static Logger logger = LoggerFactory.getLogger(ServerSocketImpl.class);
+	private final Logger logger;
 	//List of internal events
 	private final List<ChangeEvent> changeEvents = new LinkedList<>();
 	//Data that should be sendMessage
@@ -40,7 +40,8 @@ public class ServerSocketImpl implements ServerSocket {
 	private final BehaviorSubject<Boolean> isStartedObservable = BehaviorSubject.create();
 	private Selector selector;
 
-	public ServerSocketImpl() {
+	public ServerSocketImpl(String socketName) {
+		logger = LoggerFactory.getLogger(socketName);
 		isStartedObservable.onNext(false);
 	}
 
@@ -177,8 +178,6 @@ public class ServerSocketImpl implements ServerSocket {
 
 		try {
 			String message = SocketChannelUtil.readMessage(channel);
-			logger.debug("Read message={}", message);
-
 			serverSocketObservable.onNext(new NewMessageEvent(channel, message));
 		} catch (IOException e) {
 			logger.error("Error while reading a message", e);

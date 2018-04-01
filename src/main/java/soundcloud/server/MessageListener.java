@@ -20,7 +20,7 @@ import soundcloud.util.RxUtil;
  */
 public class MessageListener {
 
-	private final static String CRLF = "\r\n";
+	private final static String CRLF = "\\n";
 	private final Parser<EventEntity> sourceEventParser;
 	private final Parser<String> clientEventParser;
 	private final Observable<ServerSocketEvent> sourceEventMessages;
@@ -51,17 +51,18 @@ public class MessageListener {
 					.forEach(eventExecutor::execute)
 			);
 
-		this.clientEventSubscription = clientMessage.subscribe(clientMessage -> {
-			if (clientMessage instanceof NewMessageEvent) {
-				NewMessageEvent newMessageEvent = (NewMessageEvent) clientMessage;
-				String userCode = clientEventParser.parse(newMessageEvent.getMessage());
-				userCache.addUser(userCode, new UserEntity(null, newMessageEvent.getSocketChannel()));
-			} else if (clientMessage instanceof ClientDisconnectEvent) {
-				ClientDisconnectEvent disconnectEvent = (ClientDisconnectEvent) clientMessage;
-				SocketChannel socketChannel = disconnectEvent.getSocketChannel();
-				userCache.removeUser(socketChannel);
-			}
-		});
+		this.clientEventSubscription = clientMessage
+			.subscribe(clientMessage -> {
+				if (clientMessage instanceof NewMessageEvent) {
+					NewMessageEvent newMessageEvent = (NewMessageEvent) clientMessage;
+					String userCode = clientEventParser.parse(newMessageEvent.getMessage());
+					userCache.addUser(userCode, new UserEntity(userCode, newMessageEvent.getSocketChannel()));
+				} else if (clientMessage instanceof ClientDisconnectEvent) {
+					ClientDisconnectEvent disconnectEvent = (ClientDisconnectEvent) clientMessage;
+					SocketChannel socketChannel = disconnectEvent.getSocketChannel();
+					userCache.removeUser(socketChannel);
+				}
+			});
 	}
 
 	public void stopListen() {

@@ -19,7 +19,10 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 import soundcloud.server.event.ChangeEvent;
+import soundcloud.server.event.ClientDisconnectEvent;
+import soundcloud.server.event.NewClientEvent;
 import soundcloud.server.event.NewMessageEvent;
+import soundcloud.server.event.ServerSocketEvent;
 import soundcloud.util.SocketChannelUtil;
 
 /**
@@ -33,7 +36,7 @@ public class ServerSocketImpl implements ServerSocket {
 	//Data that should be sendMessage
 	private final Map<SocketChannel, ByteBuffer> pendingData = new HashMap<>();
 
-	private final BehaviorSubject<NewMessageEvent> messageObservable = BehaviorSubject.create();
+	private final BehaviorSubject<ServerSocketEvent> serverSocketObservable = BehaviorSubject.create();
 	private final BehaviorSubject<Boolean> isStartedObservable = BehaviorSubject.create();
 	private Selector selector;
 
@@ -64,8 +67,8 @@ public class ServerSocketImpl implements ServerSocket {
 	}
 
 	@Override
-	public Observable<NewMessageEvent> messageObservable() {
-		return messageObservable;
+	public Observable<ServerSocketEvent> messageObservable() {
+		return serverSocketObservable;
 	}
 
 	@Override
@@ -95,7 +98,7 @@ public class ServerSocketImpl implements ServerSocket {
 							if (selectionKey != null && selectionKey.isValid()) {
 								selectionKey.interestOps(changeEvent.getOperationType());
 							} else {
-								logger.warn("Selection key is in unvalid state");
+								logger.warn("Selection key is in invalid state");
 							}
 							break;
 						}
@@ -136,6 +139,7 @@ public class ServerSocketImpl implements ServerSocket {
 			logger.info("Server accept connection from a new client with address={}", remoteAddress);
 
 			channel.register(selector, SelectionKey.OP_READ);
+			serverSocketObservable.onNext(new NewClientEvent(channel));
 		} catch (IOException e) {
 			logger.error("Error while registering client", e);
 		}
@@ -175,7 +179,7 @@ public class ServerSocketImpl implements ServerSocket {
 			String message = SocketChannelUtil.readMessage(channel);
 			logger.debug("Read message={}", message);
 
-			messageObservable.onNext(new NewMessageEvent(channel, message));
+			serverSocketObservable.onNext(new NewMessageEvent(channel, message));
 		} catch (IOException e) {
 			logger.error("Error while reading a message", e);
 			removeSocketChannel(channel);
@@ -192,5 +196,6 @@ public class ServerSocketImpl implements ServerSocket {
 		} catch (IOException e) {
 			logger.error("exception when try to close channel", e);
 		}
+		serverSocketObservable.onNext(new ClientDisconnectEvent(channel));
 	}
 }

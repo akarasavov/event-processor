@@ -1,7 +1,7 @@
-package soundcloud.action.executor;
+package soundcloud.event.executor;
 
 import org.jetbrains.annotations.NotNull;
-import soundcloud.action.entity.EventEntity;
+import soundcloud.event.entity.EventEntity;
 
 /**
  * @author akt.

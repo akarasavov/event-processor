@@ -11,6 +11,7 @@ import org.junit.Test;
 import rx.schedulers.Schedulers;
 import soundcloud.client.ClientSocket;
 import soundcloud.client.ClientSocketImpl;
+import soundcloud.server.event.NewMessageEvent;
 
 /**
  * @author akt.
@@ -62,9 +63,11 @@ public class ServerSocketImplTest {
 				}
 			});
 		server.messageObservable()
+			.filter(serverSocketEvent -> serverSocketEvent instanceof NewMessageEvent)
+			.map(serverSocketEvent -> (NewMessageEvent) serverSocketEvent)
 			.subscribe(newMessageEvent -> {
 				System.out.println("Receive new message=" + newMessageEvent);
-				Assert.assertTrue(newMessageEvent.message.equals(message));
+				Assert.assertTrue(newMessageEvent.getMessage().equals(message));
 			});
 		Thread.sleep(1000);
 	}

@@ -3,8 +3,8 @@ package soundcloud.parser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import soundcloud.action.entity.EventEntity;
-import soundcloud.action.entity.EventType;
+import soundcloud.event.entity.EventEntity;
+import soundcloud.event.entity.EventType;
 
 /**
  * @author akt.

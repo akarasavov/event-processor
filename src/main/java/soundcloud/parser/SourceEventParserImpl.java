@@ -3,8 +3,8 @@ package soundcloud.parser;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import soundcloud.action.entity.EventEntity;
-import soundcloud.action.entity.EventType;
+import soundcloud.event.entity.EventEntity;
+import soundcloud.event.entity.EventType;
 
 /**
  * @author akt.

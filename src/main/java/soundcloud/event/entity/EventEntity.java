@@ -1,4 +1,4 @@
-package soundcloud.action.entity;
+package soundcloud.event.entity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

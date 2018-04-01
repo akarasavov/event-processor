@@ -5,7 +5,7 @@ import java.nio.channels.SocketChannel;
 /**
  * @author akt
  */
-public class ClientDisconnectEvent implements ServerDataEvent {
+public class ClientDisconnectEvent implements ServerSocketEvent {
 
 	private final SocketChannel socketChannel;
 

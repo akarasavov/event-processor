@@ -3,7 +3,7 @@ package soundcloud.server;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import rx.Observable;
-import soundcloud.server.event.NewMessageEvent;
+import soundcloud.server.event.ServerSocketEvent;
 
 /**
  * @author akt.
@@ -14,7 +14,7 @@ public interface ServerSocket {
 
 	void sendMessage(String message, SocketChannel socketChannel);
 
-	Observable<NewMessageEvent> messageObservable();
+	Observable<ServerSocketEvent> messageObservable();
 
 	Observable<Boolean> isStartedObservable();
 }

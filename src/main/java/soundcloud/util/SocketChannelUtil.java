@@ -6,7 +6,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 
 /**
- * @author akarasavov
+ * @author akt
  */
 public class SocketChannelUtil {
 

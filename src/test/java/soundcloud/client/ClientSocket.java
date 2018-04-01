@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import rx.Observable;
 
 /**
- * @author akarasavov
+ * @author akt
  */
 public interface ClientSocket {
 

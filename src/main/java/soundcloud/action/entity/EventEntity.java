@@ -1,4 +1,4 @@
-package soundcloud.entity;
+package soundcloud.action.entity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -6,16 +6,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author akt.
  */
-public class Action {
+public class EventEntity {
 
 	private final String message;
-	private final ActionType actionType;
+	private final EventType eventType;
 	private String fromUser;
 	private String toUser;
 
-	public Action(String message, ActionType actionType) {
+	public EventEntity(String message, EventType eventType) {
 		this.message = message;
-		this.actionType = actionType;
+		this.eventType = eventType;
 	}
 
 	public void setFromUser(String fromUser) {
@@ -32,8 +32,8 @@ public class Action {
 
 
 	@NotNull
-	public ActionType getActionType() {
-		return actionType;
+	public EventType getEventType() {
+		return eventType;
 	}
 
 	@Nullable
@@ -44,5 +44,15 @@ public class Action {
 	@NotNull
 	public String getToUser() {
 		return toUser;
+	}
+
+	@Override
+	public String toString() {
+		return "EventEntity{" +
+			"message='" + message + '\'' +
+			", eventType=" + eventType +
+			", fromUser='" + fromUser + '\'' +
+			", toUser='" + toUser + '\'' +
+			'}';
 	}
 }

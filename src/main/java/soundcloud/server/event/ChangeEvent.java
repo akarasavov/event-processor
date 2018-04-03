@@ -6,6 +6,7 @@ import java.nio.channels.SocketChannel;
  * @author akt.
  */
 public class ChangeEvent {
+
 	public static final int REGISTER = 1;
 	public static final int CHANGEOPS = 2;
 	private final SocketChannel socketChannel;

@@ -17,19 +17,22 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author akt.
+ */
 public class NioServer implements Runnable, ServerSocket {
 
 	private Logger logger = LoggerFactory.getLogger(NioServer.class);
-	private final EchoWorker echoWorker;
+	private final MessageProcessor messageProcessor;
 	private final int type;
 	private Selector selector;
 	private ByteBuffer readBuffer = ByteBuffer.allocate(8196);
 	private final List<ChangeRequest> pendingChanges = new LinkedList<>();
 	private final Map<SocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 
-	public NioServer(String hostAddress, int port, int type, EchoWorker echoWorker) throws IOException {
+	public NioServer(String hostAddress, int port, int type, MessageProcessor messageProcessor) throws IOException {
 		this.selector = initSelector(hostAddress, port);
-		this.echoWorker = echoWorker;
+		this.messageProcessor = messageProcessor;
 		this.type = type;
 	}
 
@@ -55,47 +58,50 @@ public class NioServer implements Runnable, ServerSocket {
 	}
 
 	public void run() {
+		try {
+			loop();
+		} catch (IOException e) {
+			logger.error("Error in loop function", e);
+		}
+	}
+
+	private void loop() throws IOException {
 		while (true) {
-			try {
-				synchronized (this.pendingChanges) {
-					Iterator changes = this.pendingChanges.iterator();
-					while (changes.hasNext()) {
-						ChangeRequest change = (ChangeRequest) changes.next();
-						switch (change.type) {
-							case ChangeRequest.CHANGEOPS:
-								SelectionKey key = change.socket.keyFor(this.selector);
-								if (key != null) {
-									key.interestOps(change.ops);
-								} else {
-									logger.warn("SelectionKey for socket={} is null", change.socket);
-								}
-						}
-					}
-					this.pendingChanges.clear();
-				}
-
-				this.selector.select();
-
-				Iterator selectedKeys = this.selector.selectedKeys().iterator();
-				while (selectedKeys.hasNext()) {
-					SelectionKey key = (SelectionKey) selectedKeys.next();
-					selectedKeys.remove();
-
-					if (!key.isValid()) {
-						continue;
-					}
-
-					if (key.isAcceptable()) {
-						this.accept(key);
-					} else if (key.isReadable()) {
-						this.read(key);
-					} else if (key.isWritable()) {
-						this.write(key);
+			synchronized (this.pendingChanges) {
+				for (ChangeRequest change : this.pendingChanges) {
+					switch (change.type) {
+						case ChangeRequest.CHANGEOPS:
+							SelectionKey key = change.socket.keyFor(this.selector);
+							if (key != null) {
+								key.interestOps(change.ops);
+							} else {
+								logger.warn("SelectionKey for socket={} is null", change.socket);
+							}
 					}
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
+				this.pendingChanges.clear();
 			}
+
+			this.selector.select();
+
+			Iterator selectedKeys = this.selector.selectedKeys().iterator();
+			while (selectedKeys.hasNext()) {
+				SelectionKey key = (SelectionKey) selectedKeys.next();
+				selectedKeys.remove();
+
+				if (!key.isValid()) {
+					continue;
+				}
+
+				if (key.isAcceptable()) {
+					this.accept(key);
+				} else if (key.isReadable()) {
+					this.read(key);
+				} else if (key.isWritable()) {
+					this.write(key);
+				}
+			}
+
 		}
 	}
 
@@ -106,7 +112,7 @@ public class NioServer implements Runnable, ServerSocket {
 		socketChannel.configureBlocking(false);
 
 		socketChannel.register(this.selector, SelectionKey.OP_READ);
-		echoWorker.newClient(this, socketChannel);
+		messageProcessor.newClient(this, socketChannel);
 	}
 
 	private void read(SelectionKey key) throws IOException {
@@ -120,7 +126,7 @@ public class NioServer implements Runnable, ServerSocket {
 				key.channel().close();
 				key.cancel();
 			} else {
-				echoWorker.newMessage(this, socketChannel, readBuffer.array(), readBytes);
+				messageProcessor.newMessage(this, socketChannel, readBuffer.array(), readBytes);
 			}
 		} catch (IOException e) {
 			key.cancel();

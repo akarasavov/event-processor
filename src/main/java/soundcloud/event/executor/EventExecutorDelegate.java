@@ -34,7 +34,7 @@ public class EventExecutorDelegate implements EventExecutor {
 			logger.error("Register Event Executor for eventType={}", eventEntity.getEventType());
 			throw new IllegalArgumentException(String.format("EventEntity=%s can't be executed", eventEntity));
 		} else {
-			logger.info("Receive for execution entity={}", eventEntity);
+			logger.info("Receive entity for execution={}", eventEntity);
 			eventExecutor.execute(eventEntity);
 		}
 	}

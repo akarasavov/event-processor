@@ -72,6 +72,7 @@ public class MessageProcessor implements Runnable {
 		if (serverSocketEvent.getServerSocket().getType() == 0 && serverSocketEvent instanceof NewMessageEvent) {
 			NewMessageEvent newMessage = (NewMessageEvent) serverSocketEvent;
 			String message = new String(newMessage.getData(), StandardCharsets.UTF_8);
+			logger.info("Processor receive message={}", message);
 			Arrays.stream(message.split(CRLF))
 				.map(sourceEventParser::parse)
 				.filter(Objects::nonNull)
@@ -80,6 +81,7 @@ public class MessageProcessor implements Runnable {
 			&& serverSocketEvent instanceof NewMessageEvent) {
 			NewMessageEvent newMessageEvent = (NewMessageEvent) serverSocketEvent;
 			String message = new String(newMessageEvent.getData(), StandardCharsets.UTF_8);
+			logger.info("Processor receive message={}", message);
 			String userCode = clientEventParser.parse(message);
 			userCache.addUser(new ConnectedUser(userCode, newMessageEvent.getSocketChannel()));
 		} else {

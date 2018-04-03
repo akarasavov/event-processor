@@ -10,11 +10,13 @@ public class EventEntity {
 
 	private final String message;
 	private final EventType eventType;
+	private final String sequence;
 	private String fromUser;
 	private String toUser;
 
-	public EventEntity(String message, EventType eventType) {
+	public EventEntity(String message, String sequence, EventType eventType) {
 		this.message = message;
+		this.sequence = sequence;
 		this.eventType = eventType;
 	}
 
@@ -30,6 +32,9 @@ public class EventEntity {
 		return message;
 	}
 
+	public String getSequence() {
+		return sequence;
+	}
 
 	@NotNull
 	public EventType getEventType() {

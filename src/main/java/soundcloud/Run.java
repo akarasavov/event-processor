@@ -1,9 +1,15 @@
 package soundcloud;
 
 import java.io.IOException;
+import java.util.Arrays;
 import soundcloud.event.executor.EventExecutorDelegate;
+import soundcloud.parser.BroadcastEventParser;
 import soundcloud.parser.ClientEventParserImpl;
+import soundcloud.parser.FollowEventParser;
+import soundcloud.parser.PrivateMsgEventParser;
 import soundcloud.parser.SourceEventParserImpl;
+import soundcloud.parser.StatusUpdateEventParser;
+import soundcloud.parser.UnfollowEventParser;
 import soundcloud.server.MessageProcessor;
 import soundcloud.server.NioServer;
 import soundcloud.user.UserCache;
@@ -22,8 +28,10 @@ public class Run {
 		UserCache userCache = new UserCacheImpl();
 		EventExecutorDelegate eventExecutorDelegate = new EventExecutorDelegate();
 
-		MessageProcessor messageProcessor = new MessageProcessor(new SourceEventParserImpl(),
-			new ClientEventParserImpl(),
+		SourceEventParserImpl sourceEventParser = new SourceEventParserImpl(Arrays.asList(new FollowEventParser(),
+			new UnfollowEventParser(), new StatusUpdateEventParser(), new PrivateMsgEventParser(),
+			new BroadcastEventParser()));
+		MessageProcessor messageProcessor = new MessageProcessor(sourceEventParser, new ClientEventParserImpl(),
 			eventExecutorDelegate, userCache);
 		new Thread(messageProcessor).start();
 		NioServer eventServer = new NioServer(hostName, eventSourcePort, 0, messageProcessor);

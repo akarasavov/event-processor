@@ -22,4 +22,12 @@ public class ConnectedUser extends User {
 	public boolean isConnected() {
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "ConnectedUser{" +
+			"socketChannel=" + socketChannel +
+			"userCode=" + getUserCode() +
+			'}';
+	}
 }

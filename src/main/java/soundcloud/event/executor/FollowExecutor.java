@@ -24,6 +24,7 @@ class FollowExecutor extends AbstractEventExecutor {
 		if (toUser != null) {
 			toUser.addFollower(eventEntity.getFromUser());
 			if (toUser.isConnected()) {
+				logger.info("Send message={} to User={}", eventEntity.getMessage(), toUser);
 				byte[] data = eventEntity.getMessage().getBytes(StandardCharsets.UTF_8);
 				serverSocket.send(((ConnectedUser) toUser).getSocketChannel(), data);
 			}

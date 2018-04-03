@@ -15,7 +15,7 @@ public class EventEntity {
 	private String toUser;
 
 	public EventEntity(String message, String sequence, EventType eventType) {
-		this.message = message;
+		this.message = message + "\n";
 		this.sequence = sequence;
 		this.eventType = eventType;
 	}

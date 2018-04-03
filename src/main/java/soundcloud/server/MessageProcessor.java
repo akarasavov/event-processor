@@ -77,13 +77,14 @@ public class MessageProcessor implements Runnable {
 				.map(sourceEventParser::parse)
 				.filter(Objects::nonNull)
 				.forEach(eventExecutor::execute);
-		} else if (serverSocketEvent.getServerSocket().getType() == 1
-			&& serverSocketEvent instanceof NewMessageEvent) {
+		} else if (serverSocketEvent.getServerSocket().getType() == 1 && serverSocketEvent instanceof NewMessageEvent) {
 			NewMessageEvent newMessageEvent = (NewMessageEvent) serverSocketEvent;
 			String message = new String(newMessageEvent.getData(), StandardCharsets.UTF_8);
 			logger.info("Processor receive message={}", message);
 			String userCode = clientEventParser.parse(message);
-			userCache.addUser(new ConnectedUser(userCode, newMessageEvent.getSocketChannel()));
+			ConnectedUser connectedUser = new ConnectedUser(userCode, newMessageEvent.getSocketChannel());
+			logger.info("New user connected.{}", connectedUser);
+			userCache.addUser(connectedUser);
 		} else {
 			logger.info("MessageProcessor receive unsupported message={}", serverSocketEvent);
 		}

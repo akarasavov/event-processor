@@ -18,7 +18,6 @@ public class UserCacheImpl implements UserCache {
 
 	@Override
 	public void addUser(User user) {
-		logger.debug("User added. User={}", user);
 		codeUserEntityMap.put(user.getUserCode(), user);
 	}
 

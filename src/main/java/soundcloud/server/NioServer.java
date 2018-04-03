@@ -136,6 +136,7 @@ public class NioServer implements Runnable, ServerSocket {
 
 	private void write(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
+		logger.info("Send message to client={}", socketChannel);
 
 		synchronized (this.pendingData) {
 			List queue = (List) this.pendingData.get(socketChannel);

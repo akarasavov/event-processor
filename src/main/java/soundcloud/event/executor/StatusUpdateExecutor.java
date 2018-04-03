@@ -1,5 +1,6 @@
 package soundcloud.event.executor;
 
+import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import soundcloud.event.entity.EventEntity;
 import soundcloud.server.ServerSocket;
@@ -22,7 +23,8 @@ public class StatusUpdateExecutor extends AbstractEventExecutor {
 			fromUser.getFollowers().forEach(followerCode -> {
 				UserEntity toUser = userCache.getUser(followerCode);
 				if (toUser != null) {
-					serverSocket.sendMessage(eventEntity.getMessage(), toUser.getSocketChannel());
+					byte[] data = eventEntity.getMessage().getBytes(StandardCharsets.UTF_8);
+					serverSocket.send(toUser.getSocketChannel(), data);
 				} else {
 					logger.warn("Can't notify user with code={}, because it is not in the cache", followerCode);
 				}

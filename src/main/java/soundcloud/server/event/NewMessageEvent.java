@@ -1,6 +1,7 @@
 package soundcloud.server.event;
 
 import java.nio.channels.SocketChannel;
+import soundcloud.server.ServerSocket;
 
 /**
  * @author akt.
@@ -8,26 +9,25 @@ import java.nio.channels.SocketChannel;
 public class NewMessageEvent implements ServerSocketEvent {
 
 	private final SocketChannel socketChannel;
-	private final String message;
+	private final byte[] data;
+	private final ServerSocket serverSocket;
 
-	public NewMessageEvent(SocketChannel socketChannel, String message) {
+	public NewMessageEvent(ServerSocket serverSocket, SocketChannel socketChannel, byte[] data) {
 		this.socketChannel = socketChannel;
-		this.message = message;
+		this.data = data;
+		this.serverSocket = serverSocket;
 	}
 
 	public SocketChannel getSocketChannel() {
 		return socketChannel;
 	}
 
-	public String getMessage() {
-		return message;
+	public byte[] getData() {
+		return data;
 	}
 
 	@Override
-	public String toString() {
-		return "NewMessageEvent{" +
-			"socketChannel=" + socketChannel +
-			", message='" + message + '\'' +
-			'}';
+	public ServerSocket getServerSocket() {
+		return serverSocket;
 	}
 }

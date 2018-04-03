@@ -4,9 +4,8 @@ import java.io.IOException;
 import soundcloud.event.executor.EventExecutorDelegate;
 import soundcloud.parser.ClientEventParserImpl;
 import soundcloud.parser.SourceEventParserImpl;
-import soundcloud.server.MessageListener;
-import soundcloud.server.ServerSocket;
-import soundcloud.server.ServerSocketImpl;
+import soundcloud.server.EchoWorker;
+import soundcloud.server.NioServer;
 import soundcloud.user.UserCache;
 import soundcloud.user.UserCacheImpl;
 
@@ -19,29 +18,19 @@ public class Run {
 	private static final int eventSourcePort = 9090;
 	private static final int clientEventPort = 9099;
 
-	public static void main(String[] args) {
-		ServerSocket eventSourceSocket = new ServerSocketImpl("EventSourceSocket");
-		ApplicationExecutors.EVENT_SOURCE_NIO.submit(() -> {
-			try {
-				eventSourceSocket.start(hostName, eventSourcePort);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
-		ServerSocket clientEventSocket = new ServerSocketImpl("ClientSocket");
-		ApplicationExecutors.CLIENT_NIO.submit(() -> {
-			try {
-				clientEventSocket.start(hostName, clientEventPort);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
-
+	public static void main(String[] args) throws IOException {
 		UserCache userCache = new UserCacheImpl();
-		MessageListener messageListener = new MessageListener(eventSourceSocket.messageObservable(),
-			clientEventSocket.messageObservable(),
-			new SourceEventParserImpl(), new ClientEventParserImpl(),
-			new EventExecutorDelegate(clientEventSocket, userCache), userCache);
-		messageListener.startListen();
+		EventExecutorDelegate eventExecutorDelegate = new EventExecutorDelegate();
+
+		EchoWorker echoWorker = new EchoWorker(new SourceEventParserImpl(), new ClientEventParserImpl(),
+			eventExecutorDelegate, userCache);
+		new Thread(echoWorker).start();
+		NioServer eventServer = new NioServer(hostName, eventSourcePort, 0, echoWorker);
+		new Thread(eventServer).start();
+
+		NioServer clientServer = new NioServer(hostName, clientEventPort, 1, echoWorker);
+		new Thread(clientServer).start();
+
+		eventExecutorDelegate.build(clientServer, userCache);
 	}
 }

@@ -1,5 +1,6 @@
 package soundcloud.event.executor;
 
+import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import soundcloud.event.entity.EventEntity;
 import soundcloud.server.ServerSocket;
@@ -16,8 +17,10 @@ class BroadcastExecutor extends AbstractEventExecutor {
 
 	@Override
 	public void execute(@NotNull EventEntity eventEntity) {
-		userCache.getAllUsers().forEach(userEntity ->
-			serverSocket.sendMessage(eventEntity.getMessage(), userEntity.getSocketChannel())
+		userCache.getAllUsers().forEach(userEntity -> {
+				byte[] data = eventEntity.getMessage().getBytes(StandardCharsets.UTF_8);
+				serverSocket.send(userEntity.getSocketChannel(), data);
+			}
 		);
 	}
 }

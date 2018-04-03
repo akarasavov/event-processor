@@ -16,10 +16,9 @@ import soundcloud.user.UserCache;
 public class EventExecutorDelegate implements EventExecutor {
 
 	private Logger logger = LoggerFactory.getLogger(EventExecutorDelegate.class);
-	private final Map<EventType, EventExecutor> eventExecutorMap;
+	private Map<EventType, EventExecutor> eventExecutorMap;
 
-
-	public EventExecutorDelegate(ServerSocket serverSocket, UserCache userCache) {
+	public void build(ServerSocket serverSocket, UserCache userCache) {
 		this.eventExecutorMap = new HashMap<>();
 		eventExecutorMap.put(EventType.FOLLOW, new FollowExecutor(serverSocket, userCache));
 		eventExecutorMap.put(EventType.UNFOLLOW, new UnfollowExecutor(userCache));
@@ -35,6 +34,7 @@ public class EventExecutorDelegate implements EventExecutor {
 			logger.error("Register Event Executor for eventType={}", eventEntity.getEventType());
 			throw new IllegalArgumentException(String.format("EventEntity=%s can't be executed", eventEntity));
 		} else {
+			logger.info("Receive for execution entity={}", eventEntity);
 			eventExecutor.execute(eventEntity);
 		}
 	}

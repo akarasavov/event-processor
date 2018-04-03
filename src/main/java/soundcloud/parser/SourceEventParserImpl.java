@@ -26,7 +26,7 @@ public class SourceEventParserImpl implements Parser<EventEntity> {
 			return null;
 		}
 
-		EventEntity eventEntity = new EventEntity(str, eventType);
+		EventEntity eventEntity = new EventEntity(str + "\n", eventType);
 		if (length > 2) {
 			eventEntity.setFromUser(tokens[2]);
 		}

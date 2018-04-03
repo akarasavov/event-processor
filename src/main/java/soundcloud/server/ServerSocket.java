@@ -1,20 +1,14 @@
 package soundcloud.server;
 
-import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import rx.Observable;
-import soundcloud.server.event.ServerSocketEvent;
 
 /**
  * @author akt.
  */
 public interface ServerSocket {
 
-	void start(String hostName, int port) throws IOException;
+	void send(SocketChannel socket, byte[] data);
 
-	void sendMessage(String message, SocketChannel socketChannel);
+	int getType();
 
-	Observable<ServerSocketEvent> messageObservable();
-
-	Observable<Boolean> isStartedObservable();
 }

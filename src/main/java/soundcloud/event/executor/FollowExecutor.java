@@ -1,5 +1,6 @@
 package soundcloud.event.executor;
 
+import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import soundcloud.event.entity.EventEntity;
 import soundcloud.server.ServerSocket;
@@ -20,7 +21,8 @@ class FollowExecutor extends AbstractEventExecutor {
 		UserEntity toUser = userCache.getUser(eventEntity.getToUser());
 		if (toUser != null) {
 			toUser.addFollower(eventEntity.getFromUser());
-			serverSocket.sendMessage(eventEntity.getMessage(), toUser.getSocketChannel());
+			byte[] data = eventEntity.getMessage().getBytes(StandardCharsets.UTF_8);
+			serverSocket.send(toUser.getSocketChannel(), data);
 		} else {
 			logToUserProblem(eventEntity);
 		}

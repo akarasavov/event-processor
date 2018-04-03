@@ -4,8 +4,9 @@ import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import soundcloud.event.entity.EventEntity;
 import soundcloud.server.ServerSocket;
+import soundcloud.user.ConnectedUser;
+import soundcloud.user.User;
 import soundcloud.user.UserCache;
-import soundcloud.user.UserEntity;
 
 /**
  * @author akt.
@@ -18,10 +19,10 @@ public class PrivateMessage extends AbstractEventExecutor {
 
 	@Override
 	public void execute(@NotNull EventEntity eventEntity) {
-		UserEntity toUser = userCache.getUser(eventEntity.getToUser());
-		if (toUser != null) {
+		User toUser = userCache.getUser(eventEntity.getToUser());
+		if (toUser != null && toUser.isConnected()) {
 			byte[] data = eventEntity.getMessage().getBytes(StandardCharsets.UTF_8);
-			serverSocket.send(toUser.getSocketChannel(), data);
+			serverSocket.send(((ConnectedUser) toUser).getSocketChannel(), data);
 		} else {
 			logToUserProblem(eventEntity);
 		}

@@ -1,6 +1,5 @@
 package soundcloud.user;
 
-import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,12 +8,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface UserCache {
 
-	void addUser(String code, UserEntity userEntity);
+	void addUser(User connectedUser);
 
 	@Nullable
-	UserEntity getUser(String code);
+	User getUser(String code);
 
-	Collection<UserEntity> getAllUsers();
-
-	void removeUser(SocketChannel socketChannel);
+	Collection<ConnectedUser> getAllConnectedUsers();
 }

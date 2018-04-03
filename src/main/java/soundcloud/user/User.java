@@ -1,39 +1,39 @@
 package soundcloud.user;
 
-import java.nio.channels.SocketChannel;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * @author akt.
  */
-public class UserEntity {
+public class User {
 
-	private final SocketChannel socketChannel;
 	private final String userCode;
 	private final Set<String> followers = new HashSet<>();
 
-	public UserEntity(String userCode, SocketChannel socketChannel) {
+	public User(String userCode) {
 		this.userCode = userCode;
-		this.socketChannel = socketChannel;
 	}
 
 	public void addFollower(String follower) {
 		followers.add(follower);
 	}
 
-	public void removeFollower(String follower) {
-		followers.remove(follower);
+	public boolean removeFollower(String follower) {
+		return followers.remove(follower);
 	}
 
 	public Set<String> getFollowers() {
 		return followers;
 	}
 
-	public SocketChannel getSocketChannel() {
-		return socketChannel;
+	public boolean isConnected() {
+		return false;
 	}
 
+	public String getUserCode() {
+		return userCode;
+	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -44,7 +44,7 @@ public class UserEntity {
 			return false;
 		}
 
-		UserEntity that = (UserEntity) o;
+		User that = (User) o;
 
 		return userCode.equals(that.userCode);
 
@@ -57,8 +57,9 @@ public class UserEntity {
 
 	@Override
 	public String toString() {
-		return "UserEntity{" +
+		return "User{" +
 			"userCode='" + userCode + '\'' +
+			", followers=" + followers +
 			'}';
 	}
 }

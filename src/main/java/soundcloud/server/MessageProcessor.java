@@ -14,8 +14,8 @@ import soundcloud.parser.Parser;
 import soundcloud.server.event.NewClientEvent;
 import soundcloud.server.event.NewMessageEvent;
 import soundcloud.server.event.ServerSocketEvent;
+import soundcloud.user.ConnectedUser;
 import soundcloud.user.UserCache;
-import soundcloud.user.UserEntity;
 
 public class MessageProcessor implements Runnable {
 
@@ -81,7 +81,7 @@ public class MessageProcessor implements Runnable {
 			NewMessageEvent newMessageEvent = (NewMessageEvent) serverSocketEvent;
 			String message = new String(newMessageEvent.getData(), StandardCharsets.UTF_8);
 			String userCode = clientEventParser.parse(message);
-			userCache.addUser(userCode, new UserEntity(userCode, newMessageEvent.getSocketChannel()));
+			userCache.addUser(new ConnectedUser(userCode, newMessageEvent.getSocketChannel()));
 		} else {
 			logger.info("MessageProcessor receive unsupported message={}", serverSocketEvent);
 		}

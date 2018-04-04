@@ -22,7 +22,7 @@ import soundcloud.server.event.ServerType;
 /**
  * @author akt.
  */
-public class NioServer implements Runnable, ServerSocket {
+public class NioServer implements ServerSocket {
 
 	private Logger logger = LoggerFactory.getLogger(NioServer.class);
 	private final EventProcessor eventProcessor;

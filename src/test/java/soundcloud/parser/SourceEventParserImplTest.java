@@ -1,6 +1,5 @@
 package soundcloud.parser;
 
-import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,9 +15,7 @@ public class SourceEventParserImplTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.actionParser = new SourceEventParserImpl(Arrays.asList(new FollowEventParser(),
-			new UnfollowEventParser(), new StatusUpdateEventParser(), new PrivateMsgEventParser(),
-			new BroadcastEventParser()));
+		this.actionParser = SourceEventParserImpl.DEFAULT;
 	}
 
 	@Test

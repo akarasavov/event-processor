@@ -77,7 +77,7 @@ public class NioServer implements Runnable, ServerSocket {
 							if (key != null && key.isValid()) {
 								key.interestOps(change.ops);
 							} else {
-								logger.warn("SelectionKey for socket={} is null", change.socket);
+								logger.warn("SelectionKey for socket={} is null or invalid", change.socket);
 							}
 					}
 				}

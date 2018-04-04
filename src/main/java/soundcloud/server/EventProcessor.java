@@ -90,28 +90,27 @@ public class EventProcessor implements Runnable {
 		}
 
 		String message = new String(serverEvent.getData(), StandardCharsets.UTF_8);
-		logger.info("Processor receive message={}", message);
 		List<EventEntity> events = getEventEntity(message);
+		logger.info("Processor receive packetSize={}, message={}", events.size(), message);
 		sourceEvents.addAll(events);
-		int maxEventSourceBatchSize = serverConfig.getMaxEventSourceBatchSize();
-		if (sourceEvents.size() >= maxEventSourceBatchSize) {
+		if (sourceEvents.size() >= serverConfig.getMessageBufferSize()) {
 			executeSourceEvent();
 		} else {
-			logger.info("Message will be process later. SourceEventsSize={}, maxEventSourceBatchSize={}",
-				sourceEvents.size(), maxEventSourceBatchSize);
-			int seconds = 5;
+			logger.info("Message will be process later. SourceEventsSize={}, accumulatorSize={}", sourceEvents.size(),
+				serverConfig.getMessageBufferSize());
 			this.scheduleTask = scheduledExecutor.schedule(() -> {
 				synchronized (sourceEvents) {
 					logger.info("Scheduled task run");
 					executeSourceEvent();
 				}
-			}, seconds, TimeUnit.SECONDS);
-			logger.info("Start scheduled task for {} seconds", seconds);
+			}, serverConfig.getAccumulateSeconds(), TimeUnit.MILLISECONDS);
+			logger.info("Start scheduled task for {} seconds", serverConfig.getAccumulateSeconds());
 		}
 	}
 
 	private void executeSourceEvent() {
 		Collections.sort(sourceEvents, (o1, o2) -> o1.getSequence().compareTo(o2.getSequence()));
+		logger.info("Will execute message with size={}, message={}", sourceEvents.size(), sourceEvents);
 		sourceEvents.forEach(eventExecutor::execute);
 		sourceEvents.clear();
 	}

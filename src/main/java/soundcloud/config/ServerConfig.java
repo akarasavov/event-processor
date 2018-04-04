@@ -7,17 +7,13 @@ public interface ServerConfig {
 
 	String EVENT_SEPARATOR = "\n";
 
-	String getEventSeparator();
-
 	String getHostName();
 
-	int getTotalEvents();
-
-	int getMaxEventSourceBatchSize();
+	int getAccumulateSeconds();
 
 	int getEventListenerPort();
 
 	int getClientListenerPort();
 
-
+	int getMessageBufferSize();
 }

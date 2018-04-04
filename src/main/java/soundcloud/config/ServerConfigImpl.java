@@ -9,19 +9,15 @@ import org.slf4j.LoggerFactory;
 public class ServerConfigImpl implements ServerConfig {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-
-	private String eventSeparator = "\n";
 	private String hostName = "127.0.0.1";
-	private int totalEvents = 10000000;
-	private int maxEventSourceBatchSize = 100;
+	private final int messageBufferSize;
+	private final int waitForNextMsg = 1000;
 	private int eventListenerPort = 9090;
 	private int clientListenerPort = 9099;
 
 	public ServerConfigImpl() {
-		this.eventSeparator = getStringEnvVariable("eventSeparator", eventSeparator);
-		this.totalEvents = getIntEnvVariable("totalEvents", totalEvents);
-		this.maxEventSourceBatchSize = getIntEnvVariable("maxEventSourceBatchSize",
-			maxEventSourceBatchSize);
+		int maxEventSourceBatchSize = getIntEnvVariable("maxEventSourceBatchSize", 100);
+		this.messageBufferSize = calculateBufferSize(maxEventSourceBatchSize);
 		this.eventListenerPort = getIntEnvVariable("eventListenerPort", eventListenerPort);
 		this.clientListenerPort = getIntEnvVariable("clientListenerPort", clientListenerPort);
 		this.hostName = getStringEnvVariable("hostName", hostName);
@@ -48,23 +44,13 @@ public class ServerConfigImpl implements ServerConfig {
 	}
 
 	@Override
-	public String getEventSeparator() {
-		return eventSeparator;
-	}
-
-	@Override
 	public String getHostName() {
 		return hostName;
 	}
 
 	@Override
-	public int getTotalEvents() {
-		return totalEvents;
-	}
-
-	@Override
-	public int getMaxEventSourceBatchSize() {
-		return maxEventSourceBatchSize;
+	public int getAccumulateSeconds() {
+		return waitForNextMsg;
 	}
 
 	@Override
@@ -77,14 +63,24 @@ public class ServerConfigImpl implements ServerConfig {
 		return clientListenerPort;
 	}
 
+	public int getMessageBufferSize() {
+		return messageBufferSize;
+	}
+
+	private int calculateBufferSize(int maxEventSourceBatchSize) {
+		if (maxEventSourceBatchSize == 1) {
+			return 1;
+		} else {
+			return maxEventSourceBatchSize / 2;
+		}
+	}
 
 	@Override
 	public String toString() {
 		return "ServerConfigImpl{" +
-			"eventSeparator='" + eventSeparator + '\'' +
-			", hostName='" + hostName + '\'' +
-			", totalEvents=" + totalEvents +
-			", maxEventSourceBatchSize=" + maxEventSourceBatchSize +
+			"hostName='" + hostName + '\'' +
+			", messageBufferSize=" + messageBufferSize +
+			", waitForNextMsg=" + waitForNextMsg +
 			", eventListenerPort=" + eventListenerPort +
 			", clientListenerPort=" + clientListenerPort +
 			'}';

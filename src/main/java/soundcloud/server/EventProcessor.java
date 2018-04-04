@@ -20,6 +20,7 @@ import soundcloud.event.executor.EventExecutor;
 import soundcloud.parser.Parser;
 import soundcloud.server.event.NewMessageEvent;
 import soundcloud.server.event.ServerEvent;
+import soundcloud.server.event.ServerType;
 import soundcloud.user.ConnectedUser;
 import soundcloud.user.UserCache;
 
@@ -71,14 +72,15 @@ public class EventProcessor implements Runnable {
 	}
 
 	private void processEvent(ServerEvent serverEvent) {
-		if (serverEvent.getServerSocket().getType() == 0 && serverEvent instanceof NewMessageEvent) {
+		NewMessageEvent newMessageEvent = (NewMessageEvent) serverEvent;
+		if (serverEvent.getServerSocket().getType() == ServerType.EVENT_SOURCE_SERVER) {
 			synchronized (sourceEvents) {
-				processNewSourceEvent((NewMessageEvent) serverEvent);
+				processNewSourceEvent(newMessageEvent);
 			}
-		} else if (serverEvent.getServerSocket().getType() == 1 && serverEvent instanceof NewMessageEvent) {
-			processNewClientEvent((NewMessageEvent) serverEvent);
+		} else if (serverEvent.getServerSocket().getType() == ServerType.CLIENTS_SERVER) {
+			processNewClientEvent(newMessageEvent);
 		} else {
-			logger.info("EventProcessor receive unsupported message={}", serverEvent);
+			logger.warn("Unsupported server type={}", serverEvent.getServerSocket().getType());
 		}
 	}
 

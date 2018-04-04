@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import soundcloud.server.event.NewClientEvent;
 import soundcloud.server.event.NewMessageEvent;
+import soundcloud.server.event.ServerType;
 
 /**
  * @author akt.
@@ -26,14 +26,14 @@ public class NioServer implements Runnable, ServerSocket {
 
 	private Logger logger = LoggerFactory.getLogger(NioServer.class);
 	private final EventProcessor eventProcessor;
-	private final int type;
+	private final ServerType type;
 	private Selector selector;
 	private ByteBuffer readBuffer = ByteBuffer.allocate(8196);
 	private final List<ChangeRequest> pendingChanges = new LinkedList<>();
 	private final Map<SocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 
-	public NioServer(String hostAddress, int port, int type, EventProcessor eventProcessor) throws IOException {
-		this.selector = initSelector(hostAddress, port);
+	public NioServer(String hostAddress, int port, ServerType type, EventProcessor eventProcessor) throws IOException {
+		this.selector = initializeSelector(hostAddress, port);
 		this.eventProcessor = eventProcessor;
 		this.type = type;
 	}
@@ -55,7 +55,7 @@ public class NioServer implements Runnable, ServerSocket {
 	}
 
 	@Override
-	public int getType() {
+	public ServerType getType() {
 		return type;
 	}
 
@@ -96,28 +96,27 @@ public class NioServer implements Runnable, ServerSocket {
 				}
 
 				if (key.isAcceptable()) {
-					this.accept(key);
+					this.acceptConnection(key);
 				} else if (key.isReadable()) {
-					this.read(key);
+					this.readData(key);
 				} else if (key.isWritable()) {
-					this.write(key);
+					this.writeData(key);
 				}
 			}
 
 		}
 	}
 
-	private void accept(SelectionKey key) throws IOException {
+	private void acceptConnection(SelectionKey key) throws IOException {
 		ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 
 		SocketChannel socketChannel = serverSocketChannel.accept();
 		socketChannel.configureBlocking(false);
 
 		socketChannel.register(this.selector, SelectionKey.OP_READ);
-		eventProcessor.newEvent(new NewClientEvent(this, socketChannel));
 	}
 
-	private void read(SelectionKey key) throws IOException {
+	private void readData(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 
 		this.readBuffer.clear();
@@ -138,7 +137,7 @@ public class NioServer implements Runnable, ServerSocket {
 		}
 	}
 
-	private void write(SelectionKey key) throws IOException {
+	private void writeData(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		logger.info("Send message to client={}", socketChannel);
 
@@ -160,7 +159,7 @@ public class NioServer implements Runnable, ServerSocket {
 		}
 	}
 
-	private Selector initSelector(String host, int port) throws IOException {
+	private Selector initializeSelector(String host, int port) throws IOException {
 		Selector socketSelector = SelectorProvider.provider().openSelector();
 
 		ServerSocketChannel serverChannel = ServerSocketChannel.open();

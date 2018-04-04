@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soundcloud.server.event.NewMessageEvent;
@@ -26,27 +27,31 @@ public class NioServer implements ServerSocket {
 
 	private Logger logger = LoggerFactory.getLogger(NioServer.class);
 	private final EventProcessor eventProcessor;
-	private final ServerType type;
-	private Selector selector;
-	private ByteBuffer readBuffer = ByteBuffer.allocate(8196);
-	private final List<ChangeRequest> pendingChanges = new LinkedList<>();
-	private final Map<SocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
+	private final ServerType serverType;
+	private final Selector selector;
+	private final ByteBuffer readBuffer = ByteBuffer.allocate(8196);
+	private final List<ChangeRequest> changeEvents = new LinkedList<>();
+	private final Map<SocketChannel, List<ByteBuffer>> channelDataMap = new HashMap<>();
+	private volatile boolean shutdown;
+	private volatile boolean killed;
+	private ServerSocketChannel serverChannel;
 
-	public NioServer(String hostAddress, int port, ServerType type, EventProcessor eventProcessor) throws IOException {
+	public NioServer(String hostAddress, int port, ServerType serverType, EventProcessor eventProcessor)
+		throws IOException {
 		this.selector = initializeSelector(hostAddress, port);
 		this.eventProcessor = eventProcessor;
-		this.type = type;
+		this.serverType = serverType;
 	}
 
 	public void send(SocketChannel socket, byte[] data) {
-		synchronized (this.pendingChanges) {
-			this.pendingChanges.add(new ChangeRequest(socket, ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
+		synchronized (this.changeEvents) {
+			this.changeEvents.add(new ChangeRequest(socket, ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
 
-			synchronized (this.pendingData) {
-				List<ByteBuffer> queue = this.pendingData.get(socket);
+			synchronized (this.channelDataMap) {
+				List<ByteBuffer> queue = this.channelDataMap.get(socket);
 				if (queue == null) {
 					queue = new ArrayList<>();
-					this.pendingData.put(socket, queue);
+					this.channelDataMap.put(socket, queue);
 				}
 				queue.add(ByteBuffer.wrap(data));
 			}
@@ -54,13 +59,13 @@ public class NioServer implements ServerSocket {
 		this.selector.wakeup();
 	}
 
-	@Override
-	public ServerType getType() {
-		return type;
+	public ServerType getServerType() {
+		return serverType;
 	}
 
 	public void run() {
 		try {
+			logger.info("ServerType={} start", serverType);
 			loop();
 		} catch (IOException e) {
 			logger.error("Error in loop function", e);
@@ -68,9 +73,9 @@ public class NioServer implements ServerSocket {
 	}
 
 	private void loop() throws IOException {
-		while (true) {
-			synchronized (this.pendingChanges) {
-				for (ChangeRequest change : this.pendingChanges) {
+		while (!shutdown) {
+			synchronized (this.changeEvents) {
+				for (ChangeRequest change : this.changeEvents) {
 					switch (change.type) {
 						case ChangeRequest.CHANGEOPS:
 							SelectionKey key = change.socket.keyFor(this.selector);
@@ -81,11 +86,9 @@ public class NioServer implements ServerSocket {
 							}
 					}
 				}
-				this.pendingChanges.clear();
+				this.changeEvents.clear();
 			}
-
 			this.selector.select();
-
 			Iterator selectedKeys = this.selector.selectedKeys().iterator();
 			while (selectedKeys.hasNext()) {
 				SelectionKey key = (SelectionKey) selectedKeys.next();
@@ -103,8 +106,15 @@ public class NioServer implements ServerSocket {
 					this.writeData(key);
 				}
 			}
-
 		}
+		close();
+	}
+
+	private void close() throws IOException {
+		killed = true;
+		selector.close();
+		serverChannel.close();
+		logger.info("ServerType={} shutdown", serverType);
 	}
 
 	private void acceptConnection(SelectionKey key) throws IOException {
@@ -141,8 +151,8 @@ public class NioServer implements ServerSocket {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 		logger.info("Send message to client={}", socketChannel);
 
-		synchronized (this.pendingData) {
-			List queue = (List) this.pendingData.get(socketChannel);
+		synchronized (this.channelDataMap) {
+			List queue = (List) this.channelDataMap.get(socketChannel);
 
 			while (!queue.isEmpty()) {
 				ByteBuffer buffer = (ByteBuffer) queue.get(0);
@@ -162,7 +172,7 @@ public class NioServer implements ServerSocket {
 	private Selector initializeSelector(String host, int port) throws IOException {
 		Selector socketSelector = SelectorProvider.provider().openSelector();
 
-		ServerSocketChannel serverChannel = ServerSocketChannel.open();
+		this.serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
 
 		InetSocketAddress isa = new InetSocketAddress(host, port);
@@ -172,5 +182,15 @@ public class NioServer implements ServerSocket {
 		return socketSelector;
 	}
 
+	@Override
+	public Callable<Boolean> shutdown() {
+		shutdown = true;
+		return () -> {
+			while (!killed) {
+				selector.wakeup();
+			}
+			return true;
+		};
+	}
 }
 

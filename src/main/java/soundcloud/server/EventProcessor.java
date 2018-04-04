@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -24,19 +25,22 @@ import soundcloud.server.event.ServerType;
 import soundcloud.user.ConnectedUser;
 import soundcloud.user.UserCache;
 
-public class EventProcessor implements Runnable {
+public class EventProcessor implements CancelableRunnable {
 
 	private final ServerConfig serverConfig;
-	private Logger logger = LoggerFactory.getLogger(getClass());
-	private ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
-	private final List<ServerEvent> queue = new LinkedList<>();
+	private final List<ServerEvent> serverEvents = new LinkedList<>();
 	private final List<EventEntity> sourceEvents = new ArrayList<>();
 	private final Parser<EventEntity> sourceEventParser;
 	private final Parser<String> clientEventParser;
 	private final EventExecutor eventExecutor;
 	private final UserCache userCache;
 	private ScheduledFuture<?> scheduleTask;
+
+	private volatile boolean shutdown;
+	private volatile boolean killed;
 
 	public EventProcessor(ServerConfig serverConfig, Parser<EventEntity> sourceEventParser,
 		Parser<String> clientEventParser,
@@ -49,23 +53,27 @@ public class EventProcessor implements Runnable {
 	}
 
 	void newEvent(ServerEvent serverEvent) {
-		synchronized (queue) {
-			queue.add(serverEvent);
-			queue.notify();
+		synchronized (serverEvents) {
+			serverEvents.add(serverEvent);
+			serverEvents.notify();
 		}
 	}
 
 	public void run() {
 		while (true) {
 			ServerEvent serverEvent;
-			synchronized (queue) {
-				while (queue.isEmpty()) {
+			synchronized (serverEvents) {
+				while (serverEvents.isEmpty()) {
 					try {
-						queue.wait();
+						serverEvents.wait();
+						if (shutdown) {
+							killed = true;
+							logger.info("EventProcessor is killed");
+						}
 					} catch (InterruptedException ignored) {
 					}
 				}
-				serverEvent = queue.remove(0);
+				serverEvent = serverEvents.remove(0);
 			}
 			processEvent(serverEvent);
 		}
@@ -73,14 +81,14 @@ public class EventProcessor implements Runnable {
 
 	private void processEvent(ServerEvent serverEvent) {
 		NewMessageEvent newMessageEvent = (NewMessageEvent) serverEvent;
-		if (serverEvent.getServerSocket().getType() == ServerType.EVENT_SOURCE_SERVER) {
+		if (serverEvent.getServerSocket().getServerType() == ServerType.EVENT_SOURCE_SERVER) {
 			synchronized (sourceEvents) {
 				processNewSourceEvent(newMessageEvent);
 			}
-		} else if (serverEvent.getServerSocket().getType() == ServerType.CLIENTS_SERVER) {
+		} else if (serverEvent.getServerSocket().getServerType() == ServerType.CLIENTS_SERVER) {
 			processNewClientEvent(newMessageEvent);
 		} else {
-			logger.warn("Unsupported server type={}", serverEvent.getServerSocket().getType());
+			logger.warn("Unsupported server type={}", serverEvent.getServerSocket().getServerType());
 		}
 	}
 
@@ -130,4 +138,19 @@ public class EventProcessor implements Runnable {
 			.map(sourceEventParser::parse)
 			.filter(Objects::nonNull).collect(Collectors.toList());
 	}
+
+	@Override
+	public Callable<Boolean> shutdown() {
+		shutdown = true;
+		return () -> {
+			while (!killed) {
+				synchronized (serverEvents) {
+					serverEvents.notify();
+				}
+				Thread.sleep(100);
+			}
+			return true;
+		};
+	}
+
 }

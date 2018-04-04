@@ -6,10 +6,10 @@ import soundcloud.server.event.ServerType;
 /**
  * @author akt.
  */
-public interface ServerSocket extends Runnable {
+public interface ServerSocket extends CancelableRunnable {
 
 	void send(SocketChannel socket, byte[] data);
 
-	ServerType getType();
+	ServerType getServerType();
 
 }

@@ -63,7 +63,7 @@ public class NioServer implements ServerSocket {
 
 	public void run() {
 		try {
-			logger.info("ServerType={} start", serverType);
+			logger.info("ServerType={} started", serverType);
 			loop();
 		} catch (IOException e) {
 			logger.error("Error in loop function", e);

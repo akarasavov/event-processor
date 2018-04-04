@@ -23,14 +23,18 @@ import soundcloud.config.ServerConfigImpl;
  */
 public class EventLogicTest {
 
-	private final String host = "127.0.0.1";
-	private final int clientPort = 9099;
-	private final int eventSourcePort = 9090;
+	private String host;
+	private int clientPort;
+	private int eventSourcePort;
 	private Application application;
 
 	@Before
 	public void setUp() throws Exception {
-		this.application = new Application(new ServerConfigImpl());
+		ServerConfigImpl serverConfig = new ServerConfigImpl();
+		this.host = serverConfig.getHostName();
+		this.clientPort = serverConfig.getClientListenerPort();
+		this.eventSourcePort = serverConfig.getEventListenerPort();
+		this.application = new Application(serverConfig);
 		application.start();
 	}
 
@@ -40,7 +44,6 @@ public class EventLogicTest {
 		shutdown.forEach(elem -> {
 			try {
 				elem.call();
-				System.out.println();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

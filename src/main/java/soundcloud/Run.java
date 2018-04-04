@@ -31,7 +31,7 @@ public class Run {
 
 	public static void main(String[] args) throws IOException {
 		ServerConfig serverConfig = new ServerConfigImpl();
-		logger.debug("Application run with configuration={}", serverConfig);
+		logger.info("Application run with configuration={}", serverConfig);
 
 		UserCache userCache = new UserCacheImpl();
 		EventExecutorDelegate eventExecutorDelegate = new EventExecutorDelegate();

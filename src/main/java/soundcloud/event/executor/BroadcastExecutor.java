@@ -1,5 +1,6 @@
 package soundcloud.event.executor;
 
+import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import soundcloud.event.entity.EventEntity;
@@ -18,8 +19,11 @@ class BroadcastExecutor extends AbstractEventExecutor {
 	@Override
 	public void execute(@NotNull EventEntity eventEntity) {
 		userCache.getAllConnectedUsers().forEach(userEntity -> {
-				byte[] data = eventEntity.getMessage().getBytes(StandardCharsets.UTF_8);
-				serverSocket.send(userEntity.getSocketChannel(), data);
+			String message = eventEntity.getMessage();
+			SocketChannel socketChannel = userEntity.getSocketChannel();
+			logger.info("Send Broadcast notification message={} to address={}", message, socketChannel);
+			byte[] data = message.getBytes(StandardCharsets.UTF_8);
+			serverSocket.send(socketChannel, data);
 			}
 		);
 	}

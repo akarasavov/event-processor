@@ -24,6 +24,7 @@ public class UnfollowExecutor implements EventExecutor {
 		User toUser = userCache.getUser(eventEntity.getToUser());
 		if (toUser != null) {
 			toUser.removeFollower(eventEntity.getFromUser());
+			logger.info("Unfollow was executed on user={}", toUser);
 			userCache.addUser(toUser);
 		} else {
 			logger.warn("Event={} can't be execute, because there is no toUser in cache", eventEntity);

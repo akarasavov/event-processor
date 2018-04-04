@@ -86,41 +86,41 @@ public class EventProcessor implements Runnable {
 
 	private void processNewSourceEvent(NewMessageEvent serverEvent) {
 		if (scheduleTask != null) {
-			logger.info("Cancel scheduled task={}", scheduleTask.cancel(false));
+			logger.debug("Cancel scheduled task={}", scheduleTask.cancel(false));
 		}
 
 		String message = new String(serverEvent.getData(), StandardCharsets.UTF_8);
 		List<EventEntity> events = getEventEntity(message);
-		logger.info("Processor receive packetSize={}, message={}", events.size(), message);
+		logger.debug("Processor receive packageSize={}, message={}", events.size(), message);
 		sourceEvents.addAll(events);
 		if (sourceEvents.size() >= serverConfig.getMessageBufferSize()) {
 			executeSourceEvent();
 		} else {
-			logger.info("Message will be process later. SourceEventsSize={}, accumulatorSize={}", sourceEvents.size(),
+			logger.debug("Message will be process later. SourceEventsSize={}, accumulatorSize={}", sourceEvents.size(),
 				serverConfig.getMessageBufferSize());
 			this.scheduleTask = scheduledExecutor.schedule(() -> {
 				synchronized (sourceEvents) {
-					logger.info("Scheduled task run");
+					logger.debug("Scheduled task run");
 					executeSourceEvent();
 				}
 			}, serverConfig.getAccumulateSeconds(), TimeUnit.MILLISECONDS);
-			logger.info("Start scheduled task for {} seconds", serverConfig.getAccumulateSeconds());
+			logger.debug("Start scheduled task for {} seconds", serverConfig.getAccumulateSeconds());
 		}
 	}
 
 	private void executeSourceEvent() {
 		Collections.sort(sourceEvents, (o1, o2) -> o1.getSequence().compareTo(o2.getSequence()));
-		logger.info("Will execute message with size={}, message={}", sourceEvents.size(), sourceEvents);
+		logger.debug("Executing message with size={}, message={}", sourceEvents.size(), sourceEvents);
 		sourceEvents.forEach(eventExecutor::execute);
 		sourceEvents.clear();
 	}
 
 	private void processNewClientEvent(NewMessageEvent serverEvent) {
 		String message = new String(serverEvent.getData(), StandardCharsets.UTF_8);
-		logger.info("Processor receive message={}", message);
+		logger.debug("Processor receive message={}", message);
 		String userCode = clientEventParser.parse(message);
 		ConnectedUser connectedUser = new ConnectedUser(userCode, serverEvent.getSocketChannel());
-		logger.info("New user connected.{}", connectedUser);
+		logger.debug("New user connected.{}", connectedUser);
 		userCache.addUser(connectedUser);
 	}
 

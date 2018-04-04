@@ -1,5 +1,6 @@
 package soundcloud.event.executor;
 
+import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import org.jetbrains.annotations.NotNull;
 import soundcloud.event.entity.EventEntity;
@@ -21,8 +22,11 @@ public class PrivateMessage extends AbstractEventExecutor {
 	public void execute(@NotNull EventEntity eventEntity) {
 		User toUser = userCache.getUser(eventEntity.getToUser());
 		if (toUser != null && toUser.isConnected()) {
-			byte[] data = eventEntity.getMessage().getBytes(StandardCharsets.UTF_8);
-			serverSocket.send(((ConnectedUser) toUser).getSocketChannel(), data);
+			String message = eventEntity.getMessage();
+			byte[] data = message.getBytes(StandardCharsets.UTF_8);
+			SocketChannel socketChannel = ((ConnectedUser) toUser).getSocketChannel();
+			logger.info("Send PrivateMsg. message={}, user={}", message, toUser);
+			serverSocket.send(socketChannel, data);
 		} else {
 			logToUserProblem(eventEntity);
 		}

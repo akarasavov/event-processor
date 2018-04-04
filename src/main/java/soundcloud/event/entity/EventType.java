@@ -6,6 +6,6 @@ public enum EventType {
 	UNFOLLOW(),
 	BROADCAST(),
 	PRIVATE_MSG(),
-	STATUS_UPDATE();
+	STATUS_UPDATE()
 
 }

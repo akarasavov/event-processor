@@ -27,7 +27,7 @@ public class SourceEventParserImplTest {
 		String message = "542532|B";
 		EventEntity eventEntity = actionParser.parse(message);
 		Assert.assertTrue(eventEntity.getEventType() == EventType.BROADCAST);
-		Assert.assertTrue(eventEntity.getMessage().equals(message));
+		Assert.assertTrue(eventEntity.getMessage().equals(message + "\n"));
 	}
 
 	@Test
@@ -35,7 +35,7 @@ public class SourceEventParserImplTest {
 		String message = "666|F|60|50";
 		EventEntity eventEntity = actionParser.parse(message);
 		Assert.assertTrue(eventEntity.getEventType() == EventType.FOLLOW);
-		Assert.assertTrue(eventEntity.getMessage().equals(message));
+		Assert.assertTrue(eventEntity.getMessage().equals(message + "\n"));
 		Assert.assertTrue(eventEntity.getFromUser().equals("60"));
 		Assert.assertTrue(eventEntity.getToUser().equals("50"));
 	}
@@ -45,7 +45,7 @@ public class SourceEventParserImplTest {
 		String message = "634|S|32";
 		EventEntity eventEntity = actionParser.parse(message);
 		Assert.assertTrue(eventEntity.getEventType() == EventType.STATUS_UPDATE);
-		Assert.assertTrue(eventEntity.getMessage().equals(message));
+		Assert.assertTrue(eventEntity.getMessage().equals(message + "\n"));
 		Assert.assertTrue(eventEntity.getFromUser().equals("32"));
 	}
 

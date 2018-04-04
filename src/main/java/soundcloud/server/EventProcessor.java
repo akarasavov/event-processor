@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import soundcloud.ApplicationConstant;
+import soundcloud.config.ServerConfig;
 import soundcloud.event.entity.EventEntity;
 import soundcloud.event.executor.EventExecutor;
 import soundcloud.parser.Parser;
@@ -23,6 +25,7 @@ import soundcloud.user.UserCache;
 
 public class EventProcessor implements Runnable {
 
+	private final ServerConfig serverConfig;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	private ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
@@ -32,12 +35,12 @@ public class EventProcessor implements Runnable {
 	private final Parser<String> clientEventParser;
 	private final EventExecutor eventExecutor;
 	private final UserCache userCache;
-	private final int maxEventSourceBatchSize;
+	private ScheduledFuture<?> scheduleTask;
 
-	public EventProcessor(int maxEventSourceBatchSize, Parser<EventEntity> sourceEventParser,
+	public EventProcessor(ServerConfig serverConfig, Parser<EventEntity> sourceEventParser,
 		Parser<String> clientEventParser,
 		EventExecutor eventExecutor, UserCache userCache) {
-		this.maxEventSourceBatchSize = maxEventSourceBatchSize;
+		this.serverConfig = serverConfig;
 		this.sourceEventParser = sourceEventParser;
 		this.eventExecutor = eventExecutor;
 		this.clientEventParser = clientEventParser;
@@ -69,7 +72,9 @@ public class EventProcessor implements Runnable {
 
 	private void processEvent(ServerEvent serverEvent) {
 		if (serverEvent.getServerSocket().getType() == 0 && serverEvent instanceof NewMessageEvent) {
-			processNewSourceEvent((NewMessageEvent) serverEvent);
+			synchronized (sourceEvents) {
+				processNewSourceEvent((NewMessageEvent) serverEvent);
+			}
 		} else if (serverEvent.getServerSocket().getType() == 1 && serverEvent instanceof NewMessageEvent) {
 			processNewClientEvent((NewMessageEvent) serverEvent);
 		} else {
@@ -78,15 +83,28 @@ public class EventProcessor implements Runnable {
 	}
 
 	private void processNewSourceEvent(NewMessageEvent serverEvent) {
+		if (scheduleTask != null) {
+			logger.info("Cancel scheduled task={}", scheduleTask.cancel(false));
+		}
+
 		String message = new String(serverEvent.getData(), StandardCharsets.UTF_8);
 		logger.info("Processor receive message={}", message);
 		List<EventEntity> events = getEventEntity(message);
 		sourceEvents.addAll(events);
+		int maxEventSourceBatchSize = serverConfig.getMaxEventSourceBatchSize();
 		if (sourceEvents.size() >= maxEventSourceBatchSize) {
 			executeSourceEvent();
 		} else {
 			logger.info("Message will be process later. SourceEventsSize={}, maxEventSourceBatchSize={}",
 				sourceEvents.size(), maxEventSourceBatchSize);
+			int seconds = 5;
+			this.scheduleTask = scheduledExecutor.schedule(() -> {
+				synchronized (sourceEvents) {
+					logger.info("Scheduled task run");
+					executeSourceEvent();
+				}
+			}, seconds, TimeUnit.SECONDS);
+			logger.info("Start scheduled task for {} seconds", seconds);
 		}
 	}
 
@@ -107,7 +125,7 @@ public class EventProcessor implements Runnable {
 
 
 	private List<EventEntity> getEventEntity(String message) {
-		return Arrays.stream(message.split(ApplicationConstant.EVENT_SEPARATOR))
+		return Arrays.stream(message.split(ServerConfig.EVENT_SEPARATOR))
 			.map(sourceEventParser::parse)
 			.filter(Objects::nonNull).collect(Collectors.toList());
 	}

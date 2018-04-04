@@ -2,6 +2,10 @@ package soundcloud;
 
 import java.io.IOException;
 import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import soundcloud.config.ServerConfig;
+import soundcloud.config.ServerConfigImpl;
 import soundcloud.event.executor.EventExecutorDelegate;
 import soundcloud.parser.BroadcastEventParser;
 import soundcloud.parser.ClientEventParserImpl;
@@ -20,25 +24,27 @@ import soundcloud.user.UserCacheImpl;
  */
 public class Run {
 
-	private static final String hostName = "127.0.0.1";
-	private static final int eventSourcePort = 9090;
-	private static final int clientEventPort = 9099;
+	private static final Logger logger = LoggerFactory.getLogger(Run.class);
 
 	public static void main(String[] args) throws IOException {
+		ServerConfig serverConfig = new ServerConfigImpl();
+		logger.debug("Application run with configuration={}", serverConfig);
+
 		UserCache userCache = new UserCacheImpl();
 		EventExecutorDelegate eventExecutorDelegate = new EventExecutorDelegate();
 
 		SourceEventParserImpl sourceEventParser = new SourceEventParserImpl(Arrays.asList(new FollowEventParser(),
 			new UnfollowEventParser(), new StatusUpdateEventParser(), new PrivateMsgEventParser(),
 			new BroadcastEventParser()));
-		int maxEventSourceBatchSize = 100;
-		EventProcessor eventProcessor = new EventProcessor(maxEventSourceBatchSize, sourceEventParser,
+		EventProcessor eventProcessor = new EventProcessor(serverConfig, sourceEventParser,
 			new ClientEventParserImpl(), eventExecutorDelegate, userCache);
 		new Thread(eventProcessor).start();
-		NioServer eventServer = new NioServer(hostName, eventSourcePort, 0, eventProcessor);
+		NioServer eventServer = new NioServer(serverConfig.getHostName(),
+			serverConfig.getEventListenerPort(), 0, eventProcessor);
 		new Thread(eventServer).start();
 
-		NioServer clientServer = new NioServer(hostName, clientEventPort, 1, eventProcessor);
+		NioServer clientServer = new NioServer(serverConfig.getHostName(), serverConfig.getClientListenerPort(),
+			1, eventProcessor);
 		new Thread(clientServer).start();
 
 		eventExecutorDelegate.build(clientServer, userCache);

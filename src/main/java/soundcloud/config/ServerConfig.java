@@ -1,8 +1,6 @@
 package soundcloud.config;
 
-/**
- * @author akt.
- */
+
 public interface ServerConfig {
 
 	String EVENT_SEPARATOR = "\n";

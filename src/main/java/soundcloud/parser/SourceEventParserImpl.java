@@ -6,9 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soundcloud.event.entity.EventEntity;
 
-/**
- * @author akt.
- */
+
 public class SourceEventParserImpl implements Parser<EventEntity> {
 
 	private final List<Parser<EventEntity>> parsers;

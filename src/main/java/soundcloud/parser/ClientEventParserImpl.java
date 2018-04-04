@@ -2,9 +2,7 @@ package soundcloud.parser;
 
 import soundcloud.config.ServerConfig;
 
-/**
- * @author akt.
- */
+
 public class ClientEventParserImpl implements Parser<String> {
 
 	@Override

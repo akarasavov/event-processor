@@ -6,9 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import soundcloud.event.entity.EventEntity;
 import soundcloud.event.entity.EventType;
 
-/**
- * @author akt.
- */
+
 public class PrivateMsgEventParser implements Parser<EventEntity> {
 
 	private final Pattern regex = Pattern.compile("(\\d+)\\|P\\|(\\d+)\\|(\\d+)");

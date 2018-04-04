@@ -6,9 +6,7 @@ import soundcloud.event.entity.EventEntity;
 import soundcloud.server.ServerSocket;
 import soundcloud.user.UserCache;
 
-/**
- * @author akt.
- */
+
 public abstract class AbstractEventExecutor implements EventExecutor {
 
 	Logger logger = LoggerFactory.getLogger(this.getClass());

@@ -6,9 +6,7 @@ import org.slf4j.LoggerFactory;
 import soundcloud.config.ServerConfig;
 import soundcloud.config.ServerConfigImpl;
 
-/**
- * @author akt.
- */
+
 public class Run {
 
 	private static final Logger logger = LoggerFactory.getLogger(Run.class);

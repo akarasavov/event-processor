@@ -8,9 +8,7 @@ import soundcloud.user.ConnectedUser;
 import soundcloud.user.User;
 import soundcloud.user.UserCache;
 
-/**
- * @author akt.
- */
+
 class FollowExecutor extends AbstractEventExecutor {
 
 	public FollowExecutor(ServerSocket serverSocket, UserCache userCache) {

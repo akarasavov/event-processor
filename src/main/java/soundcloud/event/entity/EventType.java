@@ -1,8 +1,6 @@
 package soundcloud.event.entity;
 
-/**
- * @author akt.
- */
+
 public enum EventType {
 	FOLLOW(),
 	UNFOLLOW(),

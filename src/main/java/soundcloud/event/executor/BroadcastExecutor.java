@@ -7,9 +7,7 @@ import soundcloud.event.entity.EventEntity;
 import soundcloud.server.ServerSocket;
 import soundcloud.user.UserCache;
 
-/**
- * @author akt.
- */
+
 class BroadcastExecutor extends AbstractEventExecutor {
 
 	BroadcastExecutor(ServerSocket serverSocket, UserCache userCache) {

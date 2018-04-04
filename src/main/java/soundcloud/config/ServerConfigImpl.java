@@ -3,9 +3,7 @@ package soundcloud.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author akt.
- */
+
 public class ServerConfigImpl implements ServerConfig {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());

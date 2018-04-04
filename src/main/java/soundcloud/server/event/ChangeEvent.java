@@ -2,9 +2,7 @@ package soundcloud.server.event;
 
 import java.nio.channels.SocketChannel;
 
-/**
- * @author akt.
- */
+
 public class ChangeEvent {
 
 	public static final int REGISTER = 1;

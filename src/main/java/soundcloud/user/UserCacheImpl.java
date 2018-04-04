@@ -8,9 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author akt.
- */
+
 public class UserCacheImpl implements UserCache {
 
 	private Logger logger = LoggerFactory.getLogger(UserCacheImpl.class);

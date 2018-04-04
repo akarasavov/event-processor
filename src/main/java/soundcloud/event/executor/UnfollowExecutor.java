@@ -7,9 +7,7 @@ import soundcloud.event.entity.EventEntity;
 import soundcloud.user.User;
 import soundcloud.user.UserCache;
 
-/**
- * @author akt.
- */
+
 public class UnfollowExecutor implements EventExecutor {
 
 	private Logger logger = LoggerFactory.getLogger(UnfollowExecutor.class);

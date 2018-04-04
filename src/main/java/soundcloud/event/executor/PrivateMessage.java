@@ -9,9 +9,7 @@ import soundcloud.user.ConnectedUser;
 import soundcloud.user.User;
 import soundcloud.user.UserCache;
 
-/**
- * @author akt.
- */
+
 public class PrivateMessage extends AbstractEventExecutor {
 
 	public PrivateMessage(ServerSocket serverSocket, UserCache userCache) {

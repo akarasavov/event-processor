@@ -2,9 +2,7 @@ package soundcloud.parser;
 
 import org.jetbrains.annotations.Nullable;
 
-/**
- * @author akt.
- */
+
 public interface Parser<T> {
 
 	/**

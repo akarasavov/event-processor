@@ -18,9 +18,7 @@ import soundcloud.Application;
 import soundcloud.SocketClient;
 import soundcloud.config.ServerConfigImpl;
 
-/**
- * @author akt.
- */
+
 public class EventLogicTest {
 
 	private String host;

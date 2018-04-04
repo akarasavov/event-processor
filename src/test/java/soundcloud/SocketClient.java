@@ -1,6 +1,4 @@
-package soundcloud; /**
- * @author akt.
- */
+package soundcloud;
 
 import java.io.BufferedReader;
 import java.io.IOException;

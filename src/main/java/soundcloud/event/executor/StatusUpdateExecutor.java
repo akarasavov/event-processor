@@ -9,9 +9,7 @@ import soundcloud.user.ConnectedUser;
 import soundcloud.user.User;
 import soundcloud.user.UserCache;
 
-/**
- * @author akt.
- */
+
 public class StatusUpdateExecutor extends AbstractEventExecutor {
 
 	public StatusUpdateExecutor(ServerSocket serverSocket, UserCache userCache) {

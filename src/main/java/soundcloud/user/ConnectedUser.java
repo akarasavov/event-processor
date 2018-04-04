@@ -2,9 +2,7 @@ package soundcloud.user;
 
 import java.nio.channels.SocketChannel;
 
-/**
- * @author akt.
- */
+
 public class ConnectedUser extends User {
 
 	private final SocketChannel socketChannel;

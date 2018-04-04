@@ -17,9 +17,7 @@ import soundcloud.server.event.ServerType;
 import soundcloud.user.UserCache;
 import soundcloud.user.UserCacheImpl;
 
-/**
- * @author akt.
- */
+
 public class Application {
 
 	private final CancelableRunnable eventServer;

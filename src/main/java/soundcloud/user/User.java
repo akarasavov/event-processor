@@ -3,9 +3,7 @@ package soundcloud.user;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author akt.
- */
+
 public class User {
 
 	private final String userCode;

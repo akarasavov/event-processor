@@ -6,9 +6,7 @@ import org.junit.Test;
 import soundcloud.event.entity.EventEntity;
 import soundcloud.event.entity.EventType;
 
-/**
- * @author akt.
- */
+
 public class SourceEventParserImplTest {
 
 	private Parser<EventEntity> actionParser;

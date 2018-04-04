@@ -20,9 +20,7 @@ import org.slf4j.LoggerFactory;
 import soundcloud.server.event.NewMessageEvent;
 import soundcloud.server.event.ServerType;
 
-/**
- * @author akt.
- */
+
 public class NioServer implements ServerSocket {
 
 	private Logger logger = LoggerFactory.getLogger(NioServer.class);

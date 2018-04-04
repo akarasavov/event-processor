@@ -3,9 +3,7 @@ package soundcloud.server.event;
 import java.nio.channels.SocketChannel;
 import soundcloud.server.ServerSocket;
 
-/**
- * @author akt.
- */
+
 public class NewMessageEvent implements ServerEvent {
 
 	private final SocketChannel socketChannel;

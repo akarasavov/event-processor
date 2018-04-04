@@ -4,9 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import soundcloud.config.ServerConfig;
 
-/**
- * @author akt.
- */
+
 public class EventEntity {
 
 	private final String message;

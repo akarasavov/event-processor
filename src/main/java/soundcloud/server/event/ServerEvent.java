@@ -5,7 +5,7 @@ import soundcloud.server.ServerSocket;
 /**
  * @author akt.
  */
-public interface ServerSocketEvent {
+public interface ServerEvent {
 
 	ServerSocket getServerSocket();
 

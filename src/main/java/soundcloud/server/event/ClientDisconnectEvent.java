@@ -6,7 +6,7 @@ import soundcloud.server.ServerSocket;
 /**
  * @author akt
  */
-public class ClientDisconnectEvent implements ServerSocketEvent {
+public class ClientDisconnectEvent implements ServerEvent {
 
 	private final SocketChannel socketChannel;
 

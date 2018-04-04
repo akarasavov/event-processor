@@ -2,6 +2,7 @@ package soundcloud.event.entity;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import soundcloud.ApplicationConstant;
 
 /**
  * @author akt.
@@ -15,7 +16,7 @@ public class EventEntity {
 	private String toUser;
 
 	public EventEntity(String message, String sequence, EventType eventType) {
-		this.message = message + "\n";
+		this.message = message + ApplicationConstant.EVENT_SEPARATOR;
 		this.sequence = sequence;
 		this.eventType = eventType;
 	}

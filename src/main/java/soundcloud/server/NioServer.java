@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import soundcloud.server.event.NewClientEvent;
+import soundcloud.server.event.NewMessageEvent;
 
 /**
  * @author akt.
@@ -23,16 +25,16 @@ import org.slf4j.LoggerFactory;
 public class NioServer implements Runnable, ServerSocket {
 
 	private Logger logger = LoggerFactory.getLogger(NioServer.class);
-	private final MessageProcessor messageProcessor;
+	private final EventProcessor eventProcessor;
 	private final int type;
 	private Selector selector;
 	private ByteBuffer readBuffer = ByteBuffer.allocate(8196);
 	private final List<ChangeRequest> pendingChanges = new LinkedList<>();
 	private final Map<SocketChannel, List<ByteBuffer>> pendingData = new HashMap<>();
 
-	public NioServer(String hostAddress, int port, int type, MessageProcessor messageProcessor) throws IOException {
+	public NioServer(String hostAddress, int port, int type, EventProcessor eventProcessor) throws IOException {
 		this.selector = initSelector(hostAddress, port);
-		this.messageProcessor = messageProcessor;
+		this.eventProcessor = eventProcessor;
 		this.type = type;
 	}
 
@@ -72,7 +74,7 @@ public class NioServer implements Runnable, ServerSocket {
 					switch (change.type) {
 						case ChangeRequest.CHANGEOPS:
 							SelectionKey key = change.socket.keyFor(this.selector);
-							if (key != null) {
+							if (key != null && key.isValid()) {
 								key.interestOps(change.ops);
 							} else {
 								logger.warn("SelectionKey for socket={} is null", change.socket);
@@ -112,7 +114,7 @@ public class NioServer implements Runnable, ServerSocket {
 		socketChannel.configureBlocking(false);
 
 		socketChannel.register(this.selector, SelectionKey.OP_READ);
-		messageProcessor.newClient(this, socketChannel);
+		eventProcessor.newEvent(new NewClientEvent(this, socketChannel));
 	}
 
 	private void read(SelectionKey key) throws IOException {
@@ -126,7 +128,9 @@ public class NioServer implements Runnable, ServerSocket {
 				key.channel().close();
 				key.cancel();
 			} else {
-				messageProcessor.newMessage(this, socketChannel, readBuffer.array(), readBytes);
+				byte[] dataCopy = new byte[readBytes];
+				System.arraycopy(readBuffer.array(), 0, dataCopy, 0, readBytes);
+				eventProcessor.newEvent(new NewMessageEvent(this, socketChannel, dataCopy));
 			}
 		} catch (IOException e) {
 			key.cancel();
